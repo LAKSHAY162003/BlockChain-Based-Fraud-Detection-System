@@ -1,7 +1,7 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
-const INFURA_API_KEY = "https://sepolia.infura.io/v3/c90d783f3c67406bad0b6e975bfb5b86";
+const INFURA_API_KEY = "https://sepolia.infura.io/v3/4bc5c07aca6d4360a4947ea517a585dd";
 
-const mnemonic = "when various mask cool practice version spot mobile point ball space apology";
+const mnemonic = "reflect talent rigid task goat burden hotel apple color senior length argue";
 
 module.exports = {
   
@@ -18,7 +18,7 @@ module.exports = {
     development: {
       //Ganache
       host: "127.0.0.1",     // Localhost (default: none)
-      port: 8545,            // Standard Ethereum port (default: none)
+      port: 3000,            // Standard Ethereum port (default: none)
       network_id: "*",       // Any network (default: none)
     },
 
