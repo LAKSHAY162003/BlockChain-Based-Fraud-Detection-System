@@ -1,4 +1,4 @@
-# Credit-Card-Fraud-Detection
+# Financial-Fraud-Detection
 Fraud Detection model based on anonymized credit card transactions
 
 It is important that credit card companies are able to recognize fraudulent credit card transactions so that customers are not charged for items that they did not purchase.
@@ -14,7 +14,7 @@ This dataset presents transactions that occurred in two days, where we have 492 
 
 1. get the code from the repository
 ```
-git clone https://github.com/sagnikghoshcr7/Credit-Card-Fraud-Detection.git 
+git clone https://github.com/LAKSHAY162003/BlockChain-Based-Fraud-Detection-System.git 
 ```
 2. [download the dataset](https://www.kaggle.com/mlg-ulb/creditcardfraud) that will be used to train a transaction classifier. Unzip it and put the content (creditcard.csv) under main folder (Credit-Card-Fraud-Detection)
 
