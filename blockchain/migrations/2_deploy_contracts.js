@@ -1,4 +1,4 @@
-const LoyaltyToken = artifacts.require("./smart_contract.sol");
+const FraudDetectionSystem = artifacts.require("./FraudDetectionSystem.sol");
 module.exports = function(deployer) {
-    deployer.deploy(LoyaltyToken);
+    deployer.deploy(FraudDetectionSystem);
 };
