@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.4.21;
 
 contract GrantAllocationSystem {
     struct GrantEntry {
@@ -19,7 +19,12 @@ contract GrantAllocationSystem {
      * @param _amount Amount of the grant.
      * @param _class Class of the grant (0 for Legitimate Transaction, 1 for Fraud Transaction).
      */
-    function addGrantEntry(uint256[28] memory _features, uint256 _time, uint256 _amount, uint8 _class) public {
+    function addGrantEntry(
+        uint256[28] memory _features,
+        uint256 _time,
+        uint256 _amount,
+        uint8 _class
+    ) public {
         uint256 grantId = grantCount++;
         grants[grantId] = GrantEntry(_features, _time, _amount, _class);
     }
@@ -32,7 +37,13 @@ contract GrantAllocationSystem {
      * @param _amount Amount of the grant.
      * @param _class Class of the grant (0 for Legitimate Transaction, 1 for Fraud Transaction).
      */
-    function editGrantEntry(uint256 _grantId, uint256[28] memory _features, uint256 _time, uint256 _amount, uint8 _class) public {
+    function editGrantEntry(
+        uint256 _grantId,
+        uint256[28] memory _features,
+        uint256 _time,
+        uint256 _amount,
+        uint8 _class
+    ) public {
         require(_grantId < grantCount, "Grant ID does not exist");
         grants[_grantId] = GrantEntry(_features, _time, _amount, _class);
     }
@@ -45,7 +56,18 @@ contract GrantAllocationSystem {
      * @return amount Amount of the grant.
      * @return class Class of the grant (0 for Legitimate Transaction, 1 for Fraud Transaction).
      */
-    function getGrantEntry(uint256 _grantId) public view returns (uint256[28] memory features, uint256 time, uint256 amount, uint8 class) {
+    function getGrantEntry(
+        uint256 _grantId
+    )
+        public
+        view
+        returns (
+            uint256[28] memory features,
+            uint256 time,
+            uint256 amount,
+            uint8 class
+        )
+    {
         require(_grantId < grantCount, "Grant ID does not exist");
         GrantEntry memory entry = grants[_grantId];
         return (entry.features, entry.time, entry.amount, entry.class);
