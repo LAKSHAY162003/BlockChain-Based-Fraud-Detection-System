@@ -1,75 +1,96 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.8.0;
 
-contract FraudDetectionSystem {
-    struct TransactionEntry {
-        uint256[28] features;
-        uint256 timestamp;
-        uint256 amount;
-        uint8 transactionClass;
+interface IOracle {
+    function requestIPFSHash(string calldata _data) external returns (bytes32 requestId);
+    function getIPFSHash(bytes32 _requestId) external view returns (string memory);
+}
+
+contract HealthcareAutomationWithIPFS {
+
+    struct MedicalData {
+        uint timestamp;
+        string deviceId;
+        string ipfsHash;
     }
 
-    mapping(uint256 => TransactionEntry) transactions;
-    uint256 public transactionCount;
+    address public owner;
+    IOracle public oracle;
+    mapping(uint => MedicalData) public medicalRecords;
+    uint public recordCount = 0;
+    uint public thresholdValue = 100;
+    mapping(bytes32 => uint) public requestIdToIndex;
 
-    /**
-     * @dev Function to add a new transaction entry.
-     * @param _features Array of 28 uint256 values representing features V1 to V28.
-     * @param _timestamp Timestamp representing the time of the transaction.
-     * @param _amount Amount of the transaction.
-     * @param _transactionClass Class of the transaction (0 for Legitimate Transaction, 1 for Fraud Transaction).
-     */
-    function addTransactionEntry(
-        uint256[28] memory _features,
-        uint256 _timestamp,
-        uint256 _amount,
-        uint8 _transactionClass
-    ) public {
-        uint256 transactionId = transactionCount++;
-        transactions[transactionId] = TransactionEntry(_features, _timestamp, _amount, _transactionClass);
+    event DataStored(uint timestamp, string deviceId, string ipfsHash);
+    event ThresholdExceeded(string deviceId, uint value, uint timestamp);
+
+    constructor(address _oracle) {
+        owner = msg.sender;
+        oracle = IOracle(_oracle);
     }
 
-    /**
-     * @dev Function to edit an existing transaction entry.
-     * @param _transactionId ID of the transaction entry to be edited.
-     * @param _features Array of 28 uint256 values representing features V1 to V28.
-     * @param _timestamp Timestamp representing the time of the transaction.
-     * @param _amount Amount of the transaction.
-     * @param _transactionClass Class of the transaction (0 for Legitimate Transaction, 1 for Fraud Transaction).
-     */
-    function editTransactionEntry(
-        uint256 _transactionId,
-        uint256[28] memory _features,
-        uint256 _timestamp,
-        uint256 _amount,
-        uint8 _transactionClass
-    ) public {
-        require(_transactionId < transactionCount, "Transaction ID does not exist");
-        transactions[_transactionId] = TransactionEntry(_features, _timestamp, _amount, _transactionClass);
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the contract owner can perform this action.");
+        _;
     }
 
-    /**
-     * @dev Function to fetch details of a transaction entry by ID.
-     * @param _transactionId ID of the transaction entry to fetch.
-     * @return features Array of 28 uint256 values representing features V1 to V28.
-     * @return timestamp Timestamp representing the time of the transaction.
-     * @return amount Amount of the transaction.
-     * @return transactionClass Class of the transaction (0 for Legitimate Transaction, 1 for Fraud Transaction).
-     */
-    function getTransactionEntry(
-        uint256 _transactionId
-    )
-        public
-        view
-        returns (
-            uint256[28] memory features,
-            uint256 timestamp,
-            uint256 amount,
-            uint8 transactionClass
-        )
-    {
-        require(_transactionId < transactionCount, "Transaction ID does not exist");
-        TransactionEntry memory entry = transactions[_transactionId];
-        return (entry.features, entry.timestamp, entry.amount, entry.transactionClass);
+    function setThresholdValue(uint _thresholdValue) public onlyOwner {
+        thresholdValue = _thresholdValue;
+    }
+
+    function storeMedicalData(string memory _deviceId, uint _rawValue) public {
+        uint processedValue = processData(_rawValue);
+        string memory dataString = string(abi.encodePacked(_deviceId, ",", uint2str(processedValue)));
+        
+        bytes32 requestId = oracle.requestIPFSHash(dataString);
+        requestIdToIndex[requestId] = recordCount;
+
+        emit DataStored(block.timestamp, _deviceId, "Requesting IPFS Hash");
+
+        if (processedValue > thresholdValue) {
+            emit ThresholdExceeded(_deviceId, processedValue, block.timestamp);
+        }
+    }
+
+    function fulfillIPFSHash(bytes32 _requestId, string memory _ipfsHash) public {
+        require(msg.sender == address(oracle), "Only Oracle can call this function");
+        uint index = requestIdToIndex[_requestId];
+        medicalRecords[index] = MedicalData(block.timestamp, "", _ipfsHash);
+        
+        emit DataStored(block.timestamp, "", _ipfsHash);
+    }
+
+    function getMedicalData(uint _index) public view returns (uint, string memory, string memory) {
+        MedicalData memory data = medicalRecords[_index];
+        return (data.timestamp, data.deviceId, data.ipfsHash);
+    }
+
+    function getRecordCount() public view returns (uint) {
+        return recordCount;
+    }
+
+    function processData(uint _value) internal pure returns (uint) {
+        // Implement your data cleaning, filtering, and aggregation logic here
+        return _value;
+    }
+
+    function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint j = _i;
+        uint len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint k = len;
+        j = _i;
+        while (j != 0) {
+            bstr[--k] = bytes1(uint8(48 + j % 10));
+            j /= 10;
+        }
+        return string(bstr);
     }
 }
